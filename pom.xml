@@ -7,6 +7,76 @@
     <groupId>com.dongyl.latte</groupId>
     <artifactId>framework</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <properties>
+        <jedis.version>2.9.0</jedis.version>
+        <slf4japi.version>1.7.25</slf4japi.version>
+        <springcore.version>5.0.8.RELEASE</springcore.version>
+        <dubbo.version>2.5.3</dubbo.version>
+    </properties>
+    <dependencies>
 
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo</artifactId>
+            <version>${dubbo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${springcore.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>${jedis.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>slf4j-api</artifactId>
+            <groupId>org.slf4j</groupId>
+            <version>${slf4japi.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${springcore.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <finalName>framework</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>

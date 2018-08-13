@@ -1,5 +1,7 @@
 package com.dongyl.utils;
 
+import com.dongyl.utils.redis.RedisUtil;
+import org.junit.Before;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -10,18 +12,19 @@ import java.lang.reflect.Field;
  * @date 17:07 8/12/18
  * @project framework
  */
-public class redisUtilTest {
+public class RedisBaseTest {
     static RedisUtil redisUtil;
-    static {
+    @Before
+    public void connRedis(){
         try {
             String ip = "127.0.0.1";
             int port = 6380;
             JedisPoolConfig config = new JedisPoolConfig();
             JedisPool jedisPool = new JedisPool(config,ip,port);
-            redisUtil = new RedisUtil();
             Field field = RedisUtil.class.getDeclaredField("jedisPool");
             field.setAccessible(true);
             field.set(redisUtil,jedisPool);
+            System.out.println("redis started");
 
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
@@ -30,12 +33,5 @@ public class redisUtilTest {
             e.printStackTrace();
             System.exit(1);
         }
-    }
-
-    public static void main(String[] args) {
-        String result = redisUtil.setValue("key", "value");
-        System.out.println("result = "+result);
-        String val = redisUtil.getString("key");
-        System.out.println("val = "+val);
     }
 }

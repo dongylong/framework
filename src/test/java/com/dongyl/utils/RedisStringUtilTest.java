@@ -1,19 +1,14 @@
 package com.dongyl.utils;
 
 import com.dongyl.utils.redis.RedisStringUtil;
-import com.dongyl.utils.redis.RedisUtil;
 import org.junit.Test;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-
-import java.lang.reflect.Field;
 
 /**
  * @author dongyl
  * @date 17:07 8/12/18
  * @project framework
  */
-public class RedisStringUtilTest {
+public class RedisStringUtilTest extends RedisBaseTest{
 
     @Test
     public  void getStringTest() {

@@ -6,7 +6,7 @@
 
     <groupId>com.dongyl.latte</groupId>
     <artifactId>framework</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <properties>
         <jedis.version>2.9.0</jedis.version>
         <slf4j.version>1.7.25</slf4j.version>

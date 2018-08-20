@@ -6,6 +6,6 @@ package com.dongyl.validate.error;
  * @project framework
  */
 public interface ErrorCode {
-    int getValue();
-    String getComment();
+    int getCode();
+    String getMessage();
 }

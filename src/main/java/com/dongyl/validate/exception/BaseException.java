@@ -34,7 +34,7 @@ public class BaseException extends RuntimeException{
         StringBuilder builder = new StringBuilder();
         String message = builder.append(super.getMessage() ==null?
                 "":super.getMessage())
-                .append(this.errorCode.getComment()).toString();
+                .append(this.errorCode.getMessage()).toString();
         return message;
     }
     public ErrorCode getErrorCode() {
@@ -42,7 +42,7 @@ public class BaseException extends RuntimeException{
     }
 
     public int getErrorCodeValue(){
-        return this.errorCode.getValue();
+        return this.errorCode.getCode();
     }
     public void setErrorCode(ErrorCode errorCode) {
         this.errorCode = errorCode;

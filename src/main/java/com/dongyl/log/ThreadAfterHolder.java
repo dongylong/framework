@@ -3,6 +3,7 @@ package com.dongyl.log;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -11,8 +12,8 @@ import java.util.concurrent.ScheduledExecutorService;
  * @project framework
  */
 public class ThreadAfterHolder {
-    private static ScheduledExecutorService scheduledExecutorService;
-
+    private static int cpuCore = Runtime.getRuntime().availableProcessors();
+    private static ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(cpuCore);
     private static ThreadLocal<List<Thread>> threadLocal = new ThreadLocal<>();
 
     public static void executeAfter() {

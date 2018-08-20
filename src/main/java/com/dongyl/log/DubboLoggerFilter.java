@@ -40,7 +40,7 @@ public class DubboLoggerFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final String ERROR_CODE = "CODE";
-    private static final String ERROR_MSG = "CODE";
+    private static final String ERROR_MSG = "MSG";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -85,9 +85,9 @@ public class DubboLoggerFilter implements Filter {
 //                    }
 //                }
 
-                String id = TraceKeyHolder.getTraceKey();
-                if (id != null) {
-                    RpcContext.getContext().setAttachment(CALLER_CHAIN_ID, id);
+                String reqId = TraceKeyHolder.getTraceKey();
+                if (reqId != null) {
+                    RpcContext.getContext().setAttachment(CALLER_CHAIN_ID, reqId);
                 }
                 start = System.currentTimeMillis();
 
@@ -115,16 +115,17 @@ public class DubboLoggerFilter implements Filter {
                         }
                         if (constraintViolation != null) {
                             ErrorCode errorCode = BaseErrorCode.BASIC_INPUT_PARAM_ILLEGAL;
-                            int errorValue = errorCode.getValue();
-                            String errorMsg = errorCode.getComment() + ":" + MsgTemplateResolverUtils.getMsgFromViolation(constraintViolation);
-                            Result result = toRpcResult(invoker, invocation, errorValue, errorMsg);
+                            int ErrCode = errorCode.getCode();
+                            String errorMsg = errorCode.getMessage() + ":"
+                                    + MsgTemplateResolverUtils.getMsgFromViolation(constraintViolation);
+                            Result result = toRpcResult(invoker, invocation, ErrCode, errorMsg);
                             if (result != null) {
                                 LOGGER.warn("请求参数错误,接口：{}，错误原因：{}，自动返回结果：{}",
                                         methodName, errorMsg, result);
-                                LOGGER.warn("错误码:{}，错误原因:{}", errorValue, errorMsg);
+                                LOGGER.warn("错误码:{}，错误原因:{}", ErrCode, errorMsg);
                                 return result;
                             }
-                            LOGGER.warn("请求中参数有误，但是无法自动处理返回结果，将进入调用链{}", errorValue);
+                            LOGGER.warn("请求中参数有误，但是无法自动处理返回结果，将进入调用链{}", ErrCode);
                         }
                     } catch (Exception e) {
                         LOGGER.warn("验证请求中参数有误，自动处理返回结果出现异常，将进入调用链", e);
@@ -135,11 +136,6 @@ public class DubboLoggerFilter implements Filter {
                     start = System.currentTimeMillis();
                     LOGGER.info("[{}][REQUEST:{}]", methodName, "");
                 }
-
-//                if(isRegular){
-//                    start = System.currentTimeMillis();
-//                    logger.info("[REQUEST][{}][{}]", methodName, args[0].toString());
-//                }
             }
             Result result = invoker.invoke(invocation);
             isRegular = (result != null && result.getValue() instanceof CommonDes);
@@ -177,10 +173,10 @@ public class DubboLoggerFilter implements Filter {
                         }
                         if (constraintViolation != null) {
                             ErrorCode errorCode = BaseErrorCode.BASIC_OUTPUT_PARAM_ERROR;
-                            int errorValue = errorCode.getValue();
-                            String errorMsg = errorCode.getComment() + ":" + MsgTemplateResolverUtils.getMsgFromViolation(constraintViolation);
+                            int errCode = errorCode.getCode();
+                            String errorMsg = errorCode.getMessage() + ":" + MsgTemplateResolverUtils.getMsgFromViolation(constraintViolation);
                             CommonDes response = (CommonDes) result.getValue();
-                            response.setCode(errorValue);
+                            response.setCode(errCode);
                             response.setMessage(errorMsg);
                             LOGGER.warn("本地服务返回参数错误，接口：{}，错误原因：{}，返回结果：{}",
                                     methodName, errorMsg, result);
@@ -246,18 +242,18 @@ public class DubboLoggerFilter implements Filter {
 //            return null;
 //        }
 
-        Object value = null;
-        try {
-            value = method.getReturnType().newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            LOGGER.warn("不能进行实例化，必须包含无参数的构造方法", e);
-            return null;
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            LOGGER.warn("IllegalAccessException", e);
-            return null;
-        }
+        Object value = getNewInstance(method);
+//        try {
+//            value = method.getReturnType().newInstance();
+//        } catch (InstantiationException e) {
+//            e.printStackTrace();
+//            LOGGER.warn("不能进行实例化，必须包含无参数的构造方法", e);
+//            return null;
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//            LOGGER.warn("IllegalAccessException", e);
+//            return null;
+//        }
         PropertyDescriptor codeDescriptor;
         PropertyDescriptor msgDescriptor;
         try {
@@ -289,6 +285,20 @@ public class DubboLoggerFilter implements Filter {
         return new RpcResult(value);
     }
 
+    private Object getNewInstance(Method method) {
+        try {
+            Object value = method.getReturnType().newInstance();
+            return value;
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+            LOGGER.warn("不能进行实例化，必须包含无参数的构造方法", e);
+            return null;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            LOGGER.warn("IllegalAccessException", e);
+            return null;
+        }
+    }
 
     /**
      * 尝试建立错误码的调用结果
@@ -305,26 +315,7 @@ public class DubboLoggerFilter implements Filter {
             LOGGER.warn("方法返回类型不符，不能进行错误码的设置{}", invoker.getInterface().getCanonicalName() + "." + method.getName());
             return null;
         }
-//        if(method.getReturnType().isPrimitive()){
-//            logger.warn("方法返回类型为基本类型，不能进行错误码的设置{}",invoker.getInterface().getCanonicalName()+"."+method.getName());
-//            return null;
-//        }
-//        if(method.getReturnType().isInterface()){
-//            logger.warn("方法返回类型为接口，不能进行错误码的设置{}",invoker.getInterface().getCanonicalName()+"."+method.getName());
-//            return null;
-//        }
-        Object value = null;
-        try {
-            value = method.getReturnType().newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            LOGGER.warn("不能进行实例化，必须包含无参数的构造方法", e);
-            return null;
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            LOGGER.warn("IllegalAccessException", e);
-            return null;
-        }
+        Object value = getNewInstance(method);
         return new RpcResult(value);
     }
 
@@ -339,7 +330,8 @@ public class DubboLoggerFilter implements Filter {
      */
     private Result handleExp(final Result srcResult, Invoker<?> invoker, Invocation invocation) {
         if (!srcResult.hasException()) {
-            return srcResult;//无异常直接返回结果
+            //无异常直接返回结果
+            return srcResult;
         }
         Throwable exception = srcResult.getException();
         RuntimeException runtimeException;
@@ -362,24 +354,24 @@ public class DubboLoggerFilter implements Filter {
 //            return srcResult;
 //        }
 
-        Result wapperdResult = null;
+        Result wrapperResult;
         try {
-            wapperdResult = toRpcResult(invoker, invocation);
-            if (wapperdResult == null) {
+            wrapperResult = toRpcResult(invoker, invocation);
+            if (wrapperResult == null) {
                 LOGGER.warn("异常封装出错，将异常转为统一错误码出错");
                 LOGGER.error("错误详细信息", runtimeException);
                 return srcResult;
             } else {
                 //其他情况需要重新处理,统一包装成错误码的形式
-                CommonDes resp = (CommonDes) wapperdResult.getValue();
+                CommonDes resp = (CommonDes) wrapperResult.getValue();
                 resp.setError(CommonDes.getBaseResponse(runtimeException));
-                LOGGER.error("调用出现异常，已自动转为错误码，返回结果{}异常堆栈>>>", wapperdResult.toString(), srcResult.getException());
+                LOGGER.error("调用出现异常，已自动转为错误码，返回结果{}异常堆栈>>>", wrapperResult.toString(), srcResult.getException());
                 LOGGER.error("错误详细信息", runtimeException);
             }
         } catch (Exception e) {
             LOGGER.warn("调用目标接口出错,自动处理返回结果失败，客户端将收到异常", e);
             return srcResult;
         }
-        return wapperdResult;
+        return wrapperResult;
     }
 }

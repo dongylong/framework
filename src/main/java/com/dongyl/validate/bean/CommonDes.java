@@ -42,7 +42,7 @@ public class CommonDes implements Serializable {
         if(code!=-1){
             message = failure.getMessage();
         }else {
-            message = BaseErrorCode.errorCodeFor(code).getComment();
+            message = BaseErrorCode.errorCodeFor(code).getMessage();
         }
     }
 

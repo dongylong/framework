@@ -37,19 +37,19 @@ public enum  BaseErrorCode implements ErrorCode {
     }
 
     @Override
-    public int getValue() {
+    public int getCode() {
         return 0;
     }
 
     @Override
-    public String getComment() {
+    public String getMessage() {
         return null;
     }
 
     private static Map<Integer,ErrorCode> map = new TreeMap<>();
     static {
         for (ErrorCode code : values()){
-            map.put(code.getValue(),code);
+            map.put(code.getCode(),code);
         }
     }
     public static ErrorCode errorCodeFor(int value){
@@ -57,7 +57,7 @@ public enum  BaseErrorCode implements ErrorCode {
     }
     public static void addNewErrorCodes(ErrorCode[] codes){
         for(ErrorCode code:codes){
-            int val = code.getValue();
+            int val = code.getCode();
             if(!map.containsKey(val)){
                 map.put(val,code);
             }

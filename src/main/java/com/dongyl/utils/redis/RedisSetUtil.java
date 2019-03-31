@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Redis 集合(Set)
@@ -115,4 +113,5 @@ public class RedisSetUtil extends RedisUtil {
      15	SSCAN key cursor [MATCH pattern] [COUNT count]
      迭代集合中的元素
      */
+
 }

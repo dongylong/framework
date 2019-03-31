@@ -11,14 +11,16 @@ import java.util.*;
 
 /**
  * Redis 字符串(String)
+ *
  * @author dongyl
  * @date 10:56 8/12/18
  * @project framework
  */
-public class RedisStringUtil extends RedisUtil{
+public class RedisStringUtil extends RedisUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     //Redis 字符串(String)-----
+
     /**
      * Redis 字符串命令
      * 设置指定 key 的值
@@ -44,6 +46,44 @@ public class RedisStringUtil extends RedisUtil{
         }
     }
 
+    /**
+     *
+     * @param dbIndex
+     * @param key
+     * @param value
+     * @param expire
+     * @return
+     */
+    public static String setNx(int dbIndex, String key, String value, int expire){
+        try (Jedis jedis = jedisPool.getResource()) {
+            String result = set(dbIndex,key, value,"nx","ex",expire);
+            return result;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    /**
+     *
+     * @param dbIndex
+     * @param key
+     * @param value
+     * @param nxxx nx:只有当key不存在是才进行set，xx，则只有当key已经存在时才进行set
+     * @param expx ex 秒，px 毫秒
+     * @param expire
+     * @return
+     */
+    public static String set(int dbIndex, String key, String value,String nxxx ,String expx,int expire){
+        try (Jedis jedis = jedisPool.getResource()) {
+            selectDbIndex(jedis, dbIndex);
+            String result = jedis.set(key, value,nxxx,expx,expire);
+            Long exp = jedis.expire(key, expire);
+            LOGGER.debug("exp:{}", exp);
+            return result;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
     /**
      * Redis 字符串命令
      * 获取指定 key 的值
@@ -137,20 +177,20 @@ public class RedisStringUtil extends RedisUtil{
         }
     }
 
-   public Map<String,Object> mget(int dbIndex, String... keys) {
+    public Map<String, Object> mget(int dbIndex, String... keys) {
         int len = keys.length;
         byte[][] bytes = new byte[len][];
-        for(int i = 0 ;i <len;i++){
+        for (int i = 0; i < len; i++) {
             bytes[i] = keys[i].getBytes();
         }
-        Map<String,Object> result = new HashMap<>(len);
+        Map<String, Object> result = new HashMap<>(len);
         try (Jedis jedis = jedisPool.getResource()) {
             selectDbIndex(jedis, dbIndex);
             List<byte[]> valueList = jedis.mget(bytes);
             int size = valueList.size();
-            for(int i = 0 ; i <size ;i++){
+            for (int i = 0; i < size; i++) {
                 byte[] byteList = valueList.get(i);
-                if(byteList!=null) {
+                if (byteList != null) {
                     result.put(keys[i], TypeConvertUtil.bytesToObject(byteList));
                 }
             }
@@ -159,19 +199,20 @@ public class RedisStringUtil extends RedisUtil{
         }
         return result;
     }
-    public Map<String,Object> mget(int dbIndex, Collection keys) {
-        if(CollectionUtils.isEmpty(keys)){
+
+    public Map<String, Object> mget(int dbIndex, Collection keys) {
+        if (CollectionUtils.isEmpty(keys)) {
             return null;
         }
         int size = keys.size();
         String[] mgetKey = new String[size];
         Iterator<String> iterator = keys.iterator();
         int i = 0;
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             mgetKey[i] = iterator.next();
             i++;
         }
-        return mget(dbIndex,mgetKey);
+        return mget(dbIndex, mgetKey);
     }
 
     /**
@@ -291,7 +332,6 @@ public class RedisStringUtil extends RedisUtil{
     }
 
     /**
-
      * 13	MSETNX key value [key value ...]
      * 同时设置一个或多个 key-value 对，当且仅当所有给定 key 都不存在。
      * 14	PSETEX key milliseconds value
